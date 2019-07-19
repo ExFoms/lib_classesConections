@@ -16,8 +16,6 @@ using System.Net;
 
 
 public class clsPing
-/* 
- */
 {
     public bool busy;           //занят ли работой
     public DateTime time;
