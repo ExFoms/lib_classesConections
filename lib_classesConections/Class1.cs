@@ -177,12 +177,15 @@ public class clsConfigPrototype
     public Thread thread;
     public bool busy = false;
     public string name;
+    public string nameHandler;
     public int nrecord;
     public string comment, comment_dop;
     public bool active = false;          //указывает доступность контрольной точки
     public bool enable = true;         //включен ли контроль доступа
     public bool change_status = false;  //был ли изменен статус доступности контрольной точки
     public clsPing ping = new clsPing();
+    public int tick;
+    private Thread threadController;
     //public Metod_Log metod_log; //для передачи метода публикации лога из основного класса
     public void check()
     {
@@ -192,6 +195,22 @@ public class clsConfigPrototype
             change_status = (active != ping.active) ? true : false;
             active = ping.active;
         }
+    }    
+    public void controllerStart() //Бесконечный цикл 
+    {
+        threadController = new Thread(() =>
+        {
+            while (true)
+            {
+                if (enable) start();
+                Thread.Sleep(TimeSpan.FromSeconds(tick));                
+            }
+        })
+        { IsBackground = true };
+        threadController.Start();
+    }
+    public virtual void start()
+    { 
     }
 }
 
@@ -208,11 +227,11 @@ public class clsConnections : clsConfigPrototype
     public void startRestart()
     {
         Thread threadRestart_;
-        threadRestart_ = new Thread(Controler);
+        threadRestart_ = new Thread(controler);
         threadRestart_.IsBackground = true;
         threadRestart_.Start();
     }
-    private void Controler() //Бесконечный цикл 
+    public void controler() //Бесконечный цикл 
     {
         while (true)
         {
@@ -228,11 +247,10 @@ public class clsTransport_files : clsConfigPrototype
  * 
  */
 {
-    public int tick;
     public string prefix;
     public string[] masks;
     public bool rewrite;
-    public void start()
+    public override void start()
     {
         check();
         if (busy != true && active)
@@ -291,13 +309,11 @@ public class clsTransport_files_inpersonalfolder : clsConfigPrototype
  * 
  */
 {
-    public int tick;
     public string[] recipients; // {type,recipient} в свойствах
     public bool rewrite;
     public string prefix;
     public string[] masks; // в свойствах есть comment;
-
-    public void start()
+    public override void start()
     {
         check();
         if (busy != true && active)
@@ -353,6 +369,7 @@ public class clsTransport_files_inpersonalfolder : clsConfigPrototype
         }
         catch { }
     }
+
 }
 
 public class clstransport_files_email : clsConfigPrototype
@@ -361,11 +378,10 @@ public class clstransport_files_email : clsConfigPrototype
  * 
  */
 {
-    public int tick;
     public string folder;
     public string email;
     public string caption;
-    public void start()
+    public override void start()
     {
         check();
         if (busy != true && active)
