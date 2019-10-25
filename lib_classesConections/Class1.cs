@@ -171,7 +171,6 @@ public class clsPing
 public class clsConfigPrototype
 /* Определяет исходную структуру и методы 
  * 
- * 
  */
 {
     public Thread thread;
